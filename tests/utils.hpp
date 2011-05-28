@@ -9,14 +9,12 @@
 	{ \
 		struct value \
 		{ \
-			static std::string v() \
-			{\
-				return # value; \
-			}\
+			static std::string v; \
 		};\
+        std::string value::v = # value ; \
 	}
 #define STR_VALUE(str) \
-	strings::str::v()
+	strings::str::v
 
 /*
  * NIL struct. Use for end of list.
@@ -43,12 +41,12 @@ struct concat_list
 {
 	static std::string v(const char* delimiter = " ")
 	{
-		return list::head::v() + concat_list<typename list::tail>::v_tail(delimiter);
+		return list::head::v + concat_list<typename list::tail>::v_tail(delimiter);
 	}
 
 	static std::string v_tail(const char* delimiter = " ")
 	{
-		return std::string(delimiter) + list::head::v() + concat_list<typename list::tail>::v_tail(delimiter);
+		return std::string(delimiter) + list::head::v + concat_list<typename list::tail>::v_tail(delimiter);
 	}
 };
 template<>

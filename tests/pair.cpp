@@ -15,7 +15,7 @@ typedef pair<SELECT, pair<AUTHOR, pair<FROM, pair<AUTHORS, nil> > > > query;
 
 int main()
 {
-	std::cout << pair<SELECT, int>::head::v() ;
+	std::cout << pair<SELECT, int>::head::v ;
 	std::cout << STR_VALUE(SELECT) << std::endl;
 	std::cout << concat_list<query>::v(", ") << std::endl;
 
