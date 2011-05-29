@@ -2,22 +2,24 @@
 #include <iostream>
 
 #include "utils.hpp"
+#include "sql.hpp"
 
+using std::string;
 
-STR(SELECT);
-STR(AUTHOR);
-STR(FROM);
-STR(AUTHORS);
+STR(string, SELECT);
+STR(string, AUTHOR);
+STR(string, FROM);
+STR(string, AUTHORS);
+STR(string, IZD);
+NAME_VALUE(int, FIVE, 5)
 
-using namespace strings;
+typedef pair<SELECT, pair<AUTHOR, pair<FIVE, pair<FROM, pair<AUTHORS, nil> > > > > query;
 
-typedef pair<SELECT, pair<AUTHOR, pair<FROM, pair<AUTHORS, nil> > > > query;
+typedef pair<AUTHOR, pair<IZD, nil> > attrib;
 
 int main()
 {
-	std::cout << pair<SELECT, int>::head::v ;
-	std::cout << STR_VALUE(SELECT) << std::endl;
-	std::cout << concat_list<query>::v(", ") << std::endl;
+	std::cout << select< attrib, AUTHORS>::v() << std::endl;
 
 	return 0;
 }

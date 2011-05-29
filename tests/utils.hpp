@@ -1,25 +1,41 @@
+/**
+ *
+ *
+ */ 
+
+
 #ifndef TEMPLATE_UTILS
 #define TEMPLATE_UTILS
+
+#include <sstream>
 
 /*
  * Macros for defining static string containing structs.
  */
-#define STR(value) \
-	namespace strings \
-	{ \
-		struct value \
+#define NAME_VALUE(T, name, value) \
+		struct name \
 		{ \
-			static std::string v; \
-		};\
-        std::string value::v = # value ; \
-	}
-#define STR_VALUE(str) \
-	strings::str::v
+			static T v() \
+			{ \
+				return value;\
+			} \
+		};
+#define STR(T, value) \
+	NAME_VALUE(T, value, #value)
 
 /*
  * NIL struct. Use for end of list.
  */
-struct nil{};
+struct nil
+{
+	static std::string v(const char* delimiter = "")
+	{
+		return "";
+	}
+	static void v_tail(std::stringstream& ss, const char* delimiter = "")
+	{
+	}
+};
 
 /**
  * Meta pair struct. Use to make meta list.
@@ -29,37 +45,20 @@ struct pair
 {
 	typedef first head;
 	typedef second tail;
-};
-
-
-/**
- * Meta functor for concatting string lists.
- * ToDo: upgrade to std::sstream making it to concat any types.
- */
-template<typename list>
-struct concat_list
-{
-	static std::string v(const char* delimiter = " ")
-	{
-		return list::head::v + concat_list<typename list::tail>::v_tail(delimiter);
-	}
-
-	static std::string v_tail(const char* delimiter = " ")
-	{
-		return std::string(delimiter) + list::head::v + concat_list<typename list::tail>::v_tail(delimiter);
-	}
-};
-template<>
-struct concat_list<nil>
-{
+	/**
+	 * Method to print meta list to std::string
+	 */
 	static std::string v(const char* delimiter = "")
 	{
-		return "";
+		std::stringstream ss;
+		ss << head::v();
+		tail::v_tail(ss, delimiter);
+		return ss.str();
 	}
-
-	static std::string v_tail(const char* delimiter = "")
+	static void v_tail(std::stringstream& ss, const char* delimiter = "")
 	{
-		return "";
+		ss << delimiter << head::v();
+	  	tail::v_tail(ss, delimiter);
 	}
 };
 

@@ -1,1 +1,4 @@
 *.swp
+tests/pair
+tests/cot.test
+*.o

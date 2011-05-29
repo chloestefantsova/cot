@@ -14,7 +14,7 @@ struct select
 	{
 		std::cerr << "select 3";
 		std::stringstream ss;
-		ss << "SELECT " << attr::v(", ") << " FROM " << table::v() << " WHERE " << where::v() << ";";
+		ss << "SELECT " << attr::v(", ") << " FROM " << table::v() << " WHERE " << where::where_v() << ";";
 		return ss.str();
 	}
 };
