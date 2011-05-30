@@ -2,3 +2,5 @@
 tests/pair
 tests/cot.test
 *.o
+.sconsign.dblite
+acme.commands
