@@ -11,7 +11,7 @@ int main(int argc, char * argv[])
     // 1. Static variable _age_ is the metadatum describing the instance
     // variable age of class Author. Lowdashes (_) attached, for there
     // could be no instance variables and static variables with the same
-    // name.
+    // name. (NOTE: same applies to _name_ variable)
 
     // 2.  It seems that the C++ 98 standard prohibits the usage of
     // values as template parameters for non-integer types.  Thus, all
@@ -23,7 +23,11 @@ int main(int argc, char * argv[])
     // one argument with a name.  Since there is no way to omit the
     // latter, it would be used as argument counter.
 
-    vector<Author *> authors = Select< Author, Where< Lt<Author::_age_> > >::with(1, 40);
+    vector<Author *> authors = 
+        Select< Author, Where<
+            And<
+                Lt<Author::_age_>,
+                Eq<Author::_name_> > > >::with(2, 40, "John Smith");
 
     for (int i = 0; i < (int)authors.size(); ++i) {
         cout << authors[i]->name << " of age " << authors[i]->age << endl;
