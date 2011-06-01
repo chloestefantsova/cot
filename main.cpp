@@ -26,7 +26,7 @@ int main(int argc, char * argv[])
     vector<Author *> authors = 
         Select< Author, Where<
             And<
-                Lt<Author::_age_>,
+                Or<Lt<Author::_age_>,Gt<Author::_age_,Author::_age_> >,
                 Eq<Author::_name_> > > >::with(2, 40, "John Smith");
 
     for (int i = 0; i < (int)authors.size(); ++i) {
