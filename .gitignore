@@ -4,3 +4,4 @@ tests/cot.test
 *.o
 .sconsign.dblite
 acme.commands
+main

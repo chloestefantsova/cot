@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <cstdarg>
-#include <iostream>	// see DEBUG
+#include <iostream>        // see DEBUG
 
 class IntValue
 {
@@ -99,8 +99,6 @@ class Exec<TypeNil, __Procedure>
 class SqlQueryPart
 {
     public:
-        SqlQueryPart() {}
-        virtual ~SqlQueryPart() {}
         static std::string stringify() { return ""; }
 };
 
@@ -108,8 +106,6 @@ template<class __MetaField>
 class SqlCmp: public SqlQueryPart
 {
     public:
-        SqlCmp () {}
-        virtual ~SqlCmp() {}
         static std::string stringify() { return ""; }
         typedef TypePair<typename __MetaField::itemType, TypeNil> typeList;
 };
@@ -118,8 +114,6 @@ template<class __MetaField>
 class Lt: public SqlCmp<__MetaField>
 {
     public:
-        Lt() {}
-        virtual ~Lt() {}
         static std::string stringify() {
             return __MetaField::stringify() + " < ?";
         }
@@ -129,8 +123,6 @@ template<class __MetaField>
 class Eq: public SqlCmp<__MetaField>
 {
     public:
-        Eq() {}
-        virtual ~Eq() {}
         static std::string stringify() {
             return __MetaField::stringify() + " = ?";
         }
@@ -140,8 +132,6 @@ template<class __MetaField>
 class Gt: public SqlCmp<__MetaField>
 {
     public:
-        Gt() {}
-        virtual ~Gt() {}
         static std::string stringify() {
             return __MetaField::stringify() + " > ?";
         }
@@ -151,8 +141,6 @@ template<class __First, class __Second>
 class SqlBinOp: public SqlQueryPart
 {
     public:
-        SqlBinOp() {}
-        virtual ~SqlBinOp() {}
         static std::string stringify() { return ""; }
         typedef
             typename Append<typename __First::typeList, typename __Second::typeList>::typeList
@@ -163,8 +151,6 @@ template<class __First, class __Second>
 class And: public SqlBinOp<__First, __Second>
 {
     public:
-        And() {}
-        virtual ~And() {}
         static std::string stringify() {
             return std::string("(") + __First::stringify() + " and " + __Second::stringify() + ")";
         }
@@ -174,8 +160,6 @@ template<class __BooleanExp>
 class Where: public SqlQueryPart
 {
     public:
-        Where() {}
-        virtual ~Where() {}
         static std::string stringify() {
             return std::string("where ") + __BooleanExp::stringify();
         }
@@ -198,11 +182,9 @@ class Select: public SqlQueryPart
         };
     
     public:
-        Select() {}
-        virtual ~Select() {}
 
-	// It seems that there is no solution to the problem of
-	// removing the first parameter of the variadic function.
+        // It seems that there is no solution to the problem of
+        // removing the first parameter of the variadic function.
 
         static std::vector<__Model *> with(int n, ...) {
             va_list ap;
@@ -255,8 +237,6 @@ bool Select<__Model, __Where>::initialized = false;
     class name: public SqlQueryPart \
     { \
         public: \
-            name() {} \
-            virtual ~name() {} \
             static std::string stringify() { return # name ; }
 
 #define FIELD(cType, name, iType) \
@@ -264,8 +244,6 @@ bool Select<__Model, __Where>::initialized = false;
     class _ ## name ## _: public SqlQueryPart \
     { \
         public: \
-            _ ## name ## _ () {} \
-            virtual ~_ ## name ## _() {} \
             static std::string stringify() { return # name ; } \
             typedef iType itemType; \
     };
