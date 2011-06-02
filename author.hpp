@@ -8,9 +8,9 @@
 #include "model.h"
 
 BEGIN_MODEL(Author)
-    FIELD(std::string, name, StringValue<256>)
-    FIELD(int, age, IntValue)
-    FIELD(int, bookCount, IntValue)
+    FIELD(name, StringValue<256>)
+    FIELD(age, IntValue)
+    FIELD(bookCount, IntValue)
 END_MODEL
 
 #endif

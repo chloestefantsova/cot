@@ -11,14 +11,14 @@
             static std::string stringify() { return # name ; }\
         typedef TypePair<TypeNil,
 
-#define FIELD(cType, name, iType) \
-                iType> name ## List; \
-    cType name; \
+#define FIELD(name, ValueType) \
+                ValueType> name ## List; \
+    ValueType::castType name; \
     class _ ## name ## _: public SqlQueryPart \
     { \
         public: \
             static std::string stringify() { return # name ; } \
-            typedef iType itemType; \
+            typedef ValueType itemType; \
     };\
     typedef TypePair< TypePair<name ## List::tail, name ## List::head>,
 
