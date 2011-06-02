@@ -24,7 +24,7 @@
 
 #define END_MODEL \
         TypeNil> wrongTypeList;\
-        typedef typename wrongTypeList::head typeList;\
+        typedef wrongTypeList::head typeList;\
     };
 
 #endif //COT_MODEL_H
