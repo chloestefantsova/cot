@@ -75,20 +75,4 @@ class Exec<TypeNil, __Procedure>
         static void exec() {}
 };
 
-/*template< class __Value >
-class Reverse
-{
-    public:
-    typedef __Value list;
-};
-
-template<>
-class Reverse<TypePair<typename First, typename Second> > 
-{
-    public:
-    typedef TypePair<Reverse<TypePair::tail>::list, Reverse<TypePair::head>::list > list; 
-
-};*/
-
-
 #endif //COT_LIST_H

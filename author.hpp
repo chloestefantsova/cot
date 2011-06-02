@@ -10,6 +10,7 @@
 BEGIN_MODEL(Author)
     FIELD(std::string, name, StringValue<256>)
     FIELD(int, age, IntValue)
+    FIELD(int, bookCount, IntValue)
 END_MODEL
 
 #endif

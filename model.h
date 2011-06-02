@@ -20,11 +20,11 @@
             static std::string stringify() { return # name ; } \
             typedef iType itemType; \
     };\
-    typedef TypePair< name ## List,
+    typedef TypePair< TypePair<name ## List::tail, name ## List::head>,
 
 #define END_MODEL \
         TypeNil> wrongTypeList;\
-        /*typedef Reverse<wrongTypeList::head>::list typeList;*/\
+        typedef typename wrongTypeList::head typeList;\
     };
 
 #endif //COT_MODEL_H

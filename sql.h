@@ -136,9 +136,12 @@ class Select: public SqlQueryPart
                 Exec<paramTypeList, ParamMemSizeProcedure>::exec();
                 std::cout << "parameters need " << paramMemSize << " bytes in memory" << std::endl;
                 paramMemSize = 0;
-                //std::cout << "there are " << Length<typename __Model::typeList>::value << " results" << std::endl;
-                //Exec<typename __Model::typeList, ParamMemSizeProcedure>::exec();
-                //std::cout << "parameters need " << paramMemSize << " bytes in memory" << std::endl;
+
+                std::cout << "there are " << Length<typename __Model::typeList>::value << " results" << std::endl;
+                Exec<typename __Model::typeList, ParamMemSizeProcedure>::exec();
+                std::cout << "parameters need " << paramMemSize << " bytes in memory" << std::endl;
+                
+               /// typedef typename __Model::typeList::trail a;
 
 
                 // 2. Result
