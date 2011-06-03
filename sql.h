@@ -1,6 +1,7 @@
 #ifndef COT_CQL_H
 #define COT_SQL_H
 
+#include <stdint.h>
 #include "type.h"
 #include "list.h"
 
@@ -104,6 +105,7 @@ template<class __Model, class __Where>
 class Select: public SqlQueryPart
 {
     private:
+        static uint8_t * paramMem;
         static int paramMemSize;
         
         template<class __Item>
@@ -112,6 +114,18 @@ class Select: public SqlQueryPart
             public:
                 static void exec() {
                     paramMemSize += __Item::size;
+                }
+        };
+        
+        static uint8_t * resultMem;
+        static int resultMemSize;
+        
+        template<class __Item>
+        class ResultMemSizeProcedure
+        {
+            public:
+                static void exec() {
+                    resultMemSize += __Item::size;
                 }
         };
     
@@ -130,22 +144,15 @@ class Select: public SqlQueryPart
                 
                 // 1. Parameters
                 typedef typename __Where::typeList paramTypeList;
-                
-                // DEBUG
-                std::cout << "there are " << Length<paramTypeList>::value << " parameters" << std::endl;
                 Exec<paramTypeList, ParamMemSizeProcedure>::exec();
-                std::cout << "parameters need " << paramMemSize << " bytes in memory" << std::endl;
-                paramMemSize = 0;
-
-                std::cout << "there are " << Length<typename __Model::typeList>::value << " results" << std::endl;
-                Exec<typename __Model::typeList, ParamMemSizeProcedure>::exec();
-                std::cout << "parameters need " << paramMemSize << " bytes in memory" << std::endl;
                 
-               /// typedef typename __Model::typeList::trail a;
-
+                paramMem = new uint8_t[paramMemSize]; // throws an exception if fails, ok for us
 
                 // 2. Result
-                // FIXME: result is to be done.
+                typedef typename __Model::typeList resultTypeList;
+                Exec<resultTypeList, ResultMemSizeProcedure>::exec();
+                
+                resultMem = new uint8_t[resultMemSize]; // throws an exception if fails, ok for us
 
                 initialized = true;
             }
@@ -171,6 +178,15 @@ class Select: public SqlQueryPart
 
 template<class __Model, class __Where>
 int Select<__Model, __Where>::paramMemSize = 0;
+
+template<class __Model, class __Where>
+uint8_t * Select<__Model, __Where>::paramMem;
+
+template<class __Model, class __Where>
+int Select<__Model, __Where>::resultMemSize = 0;
+
+template<class __Model, class __Where>
+uint8_t * Select<__Model, __Where>::resultMem;
 
 template<class __Model, class __Where>
 bool Select<__Model, __Where>::initialized = false;
