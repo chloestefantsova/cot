@@ -1,11 +1,14 @@
 #include <iostream>
 #include <vector>
+#include "connection.h"
 #include "author.hpp"
 
 using namespace std;
 
 int main(int argc, char * argv[])
 {
+    Connection::connect("localhost", "cot_user", "cot_pass", "cot_db");
+
     // There are several things to note:
 
     // 1. Static variable _age_ is the metadatum describing the instance
@@ -32,6 +35,8 @@ int main(int argc, char * argv[])
     for (int i = 0; i < (int)authors.size(); ++i) {
         cout << authors[i]->name << " of age " << authors[i]->age << endl;
     }
+    
+    Connection::disconnect();
 
     return 0;
 }
