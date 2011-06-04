@@ -1,6 +1,7 @@
 #ifndef COT_CQL_H
 #define COT_SQL_H
 
+#include <cstdarg>
 #include <stdint.h>
 #include "type.h"
 #include "list.h"

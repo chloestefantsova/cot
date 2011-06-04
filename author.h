@@ -1,10 +1,7 @@
 #ifndef __author_h
 #define __author_h
 
-#include <string>
-#include <vector>
 #include <cstdarg>
-#include <iostream>        // see DEBUG
 #include "model.h"
 
 BEGIN_MODEL(Author)

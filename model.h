@@ -1,6 +1,7 @@
 #ifndef COT_MODEL_H
 #define COT_MODEL_H
 
+#include <string>
 #include "sql.h"
 #include "type.h"
 
