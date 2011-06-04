@@ -1,5 +1,5 @@
-#ifndef __author_hpp
-#define __author_hpp
+#ifndef __author_h
+#define __author_h
 
 #include <string>
 #include <vector>

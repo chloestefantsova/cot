@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include "connection.h"
-#include "author.hpp"
+#include "author.h"
 
 using namespace std;
 
