@@ -10,7 +10,15 @@
     { \
         public: \
             static std::string stringify() { return # name ; }\
-        typedef TypePair<TypeNil,
+        IntValue::castType id;\
+        class _id_: public SqlQueryPart \
+        { \
+            public: \
+                static std::string stringify() { return "id"; } \
+                typedef IntValue itemType; \
+        }; \
+        typedef TypePair< TypePair<IntValue, TypeNil>,
+//        typedef TypePair<TypeNil, 
 
 #define FIELD(name, ValueType) \
                 ValueType> name ## List; \
