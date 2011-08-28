@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <boost/scoped_ptr.hpp>
 #include "connection.h"
 #include "sql.h"
 #include "author.h"
@@ -9,6 +10,15 @@ using namespace std;
 void perform()
 {
     Connection::connect("localhost", "cot_user", "cot_pass", "cot_db");
+    
+    // An example of INSERT query.
+    boost::scoped_ptr<Author> author(new Author());
+    author->name = "John Smith";
+    author->age = 19;
+    author->bookCount = 0;
+    author->save();
+    
+    cout << "Just saved an author with id = " << author->id << endl;
 
     // There are several things to note:
 

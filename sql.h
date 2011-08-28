@@ -240,7 +240,9 @@ class Select: public SqlQueryPart
                 char * theQueryCstr = new char[theQuery.length() + 1];
                 std::strncpy(theQueryCstr, theQuery.c_str(), theQuery.length());
                 if (mysql_stmt_prepare(statement, theQueryCstr, theQuery.length()) != 0) {
-                    throw new CotException(std::string("mysql_stmt_prepare(): ") + mysql_stmt_error(statement));
+                    delete[] theQueryCstr;
+                    throw new CotException(std::string("mysql_stmt_prepare(): ") + \
+                            mysql_stmt_error(statement));
                 }
                 delete[] theQueryCstr;
                 
