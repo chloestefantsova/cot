@@ -9,31 +9,46 @@
     class name: public SqlQueryPart \
     { \
         public: \
+            typedef name cls;\
             static std::string stringify() { return # name ; }\
-        IntValue::castType id;\
-        class _id_: public SqlQueryPart \
-        { \
-            public: \
-                static std::string stringify() { return "id"; } \
-                typedef IntValue itemType; \
-        }; \
-        typedef TypePair< TypePair<IntValue, TypeNil>,
-//        typedef TypePair<TypeNil, 
+            IntValue::cpptype id;\
+            class _id_: public SqlQueryPart \
+            { \
+                public: \
+                    static std::string stringify() { return "id"; } \
+                    typedef IntValue itemType; \
+                    static void setCValue(cls * instance, typename itemType::ctype value) { \
+                        instance->id = (typename itemType::cpptype)value; \
+                    } \
+                    static void setCppValue(cls * instance, typename itemType::cpptype value) { \
+                        instance->id = value; \
+                    } \
+            }; \
+            typedef TypePair< TypePair< TypePair<_id_, IntValue>, TypeNil>,
 
 #define FIELD(name, ValueType) \
                 ValueType> name ## List; \
-    ValueType::castType name; \
+    ValueType::cpptype name; \
     class _ ## name ## _: public SqlQueryPart \
     { \
         public: \
             static std::string stringify() { return # name ; } \
             typedef ValueType itemType; \
+            static void setCValue(cls * instance, typename itemType::ctype value) {\
+                instance->name = (typename itemType::cpptype)value;\
+            }\
+            static void setCppValue(cls * instance, typename itemType::cpptype value) {\
+                instance->name = value;\
+            }\
     };\
-    typedef TypePair< TypePair<name ## List::tail, name ## List::head>,
+    typedef TypePair< TypePair< TypePair<_ ## name ## _, name ## List::tail>, name ## List::head>,
 
 #define END_MODEL \
         TypeNil> wrongTypeList;\
-        typedef wrongTypeList::head typeList;\
+        \
+        typedef wrongTypeList::head typeZippedList;\
+        typedef typename UnzipFirst<typeZippedList>::typeList memberList;\
+        typedef typename UnzipSecond<typeZippedList>::typeList typeList;\
     };
 
 #endif //COT_MODEL_H

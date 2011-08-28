@@ -6,7 +6,7 @@ CotException::CotException():
 }
 
 CotException::CotException(const std::string & msg):
-    std::runtime_error(std::string("CotException ") + msg)
+    std::runtime_error(std::string("CotException: ") + msg)
 {
 }
 

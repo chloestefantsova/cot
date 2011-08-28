@@ -1,11 +1,12 @@
 #include <iostream>
 #include <vector>
 #include "connection.h"
+#include "exception.h"
 #include "author.h"
 
 using namespace std;
 
-int main(int argc, char * argv[])
+void perform()
 {
     Connection::connect("localhost", "cot_user", "cot_pass", "cot_db");
 
@@ -28,15 +29,27 @@ int main(int argc, char * argv[])
 
     vector<Author *> authors = 
         Select< Author, Where<
-            And<
-                Or<Lt<Author::_age_>,Gt<Author::_age_,Author::_age_> >,
-                Eq<Author::_name_> > > >::with(2, 40, "John Smith");
+            Or<
+                Lt<Author::_age_>,
+                Eq<Author::_name_> > > >::with(2, 41, "John Smith");
 
     for (int i = 0; i < (int)authors.size(); ++i) {
-        cout << authors[i]->name << " of age " << authors[i]->age << endl;
+        cout << authors[i]->id << " | " \
+                << authors[i]->name << " | " \
+                << authors[i]->age << " | " \
+                << authors[i]->bookCount << endl;
     }
     
     Connection::disconnect();
+}
 
+int main(int argc, char * argv[])
+{
+    try {
+        perform();
+    } catch (const std::runtime_error * error) {
+        cerr << error->what() << endl;
+    }
+    
     return 0;
 }

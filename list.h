@@ -45,6 +45,38 @@ class Append<__List, TypeNil>
 };
 
 template<class __List>
+class UnzipFirst
+{
+    public:
+        typedef TypePair<
+            typename __List::head::head, 
+            typename UnzipFirst<typename __List::tail>::typeList >
+        typeList;
+};
+template<>
+class UnzipFirst<TypeNil>
+{
+    public:
+        typedef TypeNil typeList;
+};
+
+template<class __List>
+class UnzipSecond
+{
+    public:
+        typedef TypePair<
+            typename __List::head::tail,
+            typename UnzipSecond<typename __List::tail>::typeList >
+        typeList;
+};
+template<>
+class UnzipSecond<TypeNil>
+{
+    public:
+        typedef TypeNil typeList;
+};
+
+template<class __List>
 class Length
 {
     public:
