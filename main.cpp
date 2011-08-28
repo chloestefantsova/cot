@@ -19,6 +19,14 @@ void perform()
     author->save();
     
     cout << "Just saved an author with id = " << author->id << endl;
+    
+    // An example of UPDATE query.
+    vector<Author *> authors = Select< Author, All >::with(0);
+    for (int i = 0; i < (int)authors.size(); ++i) {
+        authors[i]->age += 1;
+        authors[i]->save();
+    }
+    cout << "All authors have grown older." << endl;
 
     // There are several things to note:
 
@@ -37,7 +45,7 @@ void perform()
     // one argument with a name.  Since there is no way to omit the
     // latter, it would be used as argument counter.
 
-    vector<Author *> authors = 
+    authors = 
         Select< Author, Where<
             Or<
                 Lt<Author::_age_>,
@@ -49,6 +57,13 @@ void perform()
                 << authors[i]->age << " | " \
                 << authors[i]->bookCount << endl;
     }
+    
+    // An example of DELETE query.
+    authors = Select< Author, Where< Eq<Author::_bookCount_> > >::with(1, 0);
+    for (int i = 0; i < (int)authors.size(); ++i) {
+        authors[i]->remove();
+    }
+    cout << "Removed all authors without books." << endl;
     
     Connection::disconnect();
 }

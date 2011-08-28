@@ -106,6 +106,13 @@ class Where: public SqlQueryPart
         typedef typename __BooleanExp::typeList typeList;
 };
 
+class All: public SqlQueryPart
+{
+    public:
+        static std::string stringify() { return ""; }
+        typedef TypeNil typeList;
+};
+
 template<class __Model, class __Where>
 class Select: public SqlQueryPart
 {
