@@ -2,15 +2,36 @@
 #define COT_MODEL_H
 
 #include <string>
-#include "sql.h"
+#include "list.h"
 #include "type.h"
 
+template<class Subclass>
+class Model
+{
+    public:
+        static const int fieldCount = Length<typename Subclass::fieldList>::value;
+        static const int totalFieldSize = MemCount<typename Subclass::typeList>::value;
+        
+        virtual ~Model() {}
+        
+        void save() {
+            if (!initialized) {
+                // FIXME: add initialization code here
+            }
+        }
+        
+    private:
+    
+        static bool initialized;
+};
+
 #define BEGIN_MODEL(name) \
-    class name: public SqlQueryPart \
+    class name: public Model<name>, SqlQueryPart \
     { \
         public: \
             typedef name cls;\
             static std::string stringify() { return # name ; }\
+            \
             IntValue::cpptype id;\
             class _id_: public SqlQueryPart \
             { \
@@ -47,7 +68,7 @@
         TypeNil> wrongTypeList;\
         \
         typedef wrongTypeList::head typeZippedList;\
-        typedef typename UnzipFirst<typeZippedList>::typeList memberList;\
+        typedef typename UnzipFirst<typeZippedList>::typeList fieldList;\
         typedef typename UnzipSecond<typeZippedList>::typeList typeList;\
     };
 

@@ -4,8 +4,11 @@
 // Classes containing the information about field types are held
 // withing this file. The file is under development.
 
+#include <cstring>
 #include <string>
+#include <stdint.h>
 #include <mysql/mysql.h>
+#include "exception.h"
 
 class AbstractValue
 {

@@ -107,4 +107,21 @@ class Exec<TypeNil, __Procedure>
         static void exec() {}
 };
 
+#define DECLARE_SUM_PROC(proc_name, field_name) \
+        template<class TypeList> \
+        class proc_name \
+        { \
+            public: \
+                static const int value = TypeList::head::field_name + \
+                        proc_name<typename TypeList::tail>::value; \
+        }; \
+        template<> \
+        class proc_name<TypeNil> \
+        { \
+            public: \
+                static const int value = 0; \
+        };
+        
+DECLARE_SUM_PROC(MemCount, max_length)
+
 #endif //COT_LIST_H

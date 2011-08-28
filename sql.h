@@ -6,9 +6,9 @@
 #include <stdint.h>
 #include <boost/scoped_ptr.hpp>
 #include <mysql/mysql.h>
+#include "exception.h"
 #include "type.h"
 #include "list.h"
-#include "exception.h"
 
 class Parameter
 {
@@ -110,53 +110,21 @@ template<class __Model, class __Where>
 class Select: public SqlQueryPart
 {
     private:
+    
+        typedef typename __Where::typeList paramTypeList;
+        typedef typename __Model::typeList resultTypeList;
+    
         static uint8_t * paramMem;
-        static int paramMemSize;
-        
-        template<class __Item>
-        class ParamMemSizeProcedure
-        {
-            public:
-                static void exec() {
-                    paramMemSize += __Item::max_length;
-                }
-        };
+        static const int paramMemSize = MemCount<paramTypeList>::value;
         
         static uint8_t * resultMem;
-        static int resultMemSize;
-        
-        template<class __Item>
-        class ResultMemSizeProcedure
-        {
-            public:
-                static void exec() {
-                    resultMemSize += __Item::max_length;
-                }
-        };
+        static const int resultMemSize = __Model::totalFieldSize;
         
         static MYSQL_BIND * paramBindMem;
-        static int paramCount;
-        
-        template<class __Item>
-        class ParamCountProcedure
-        {
-            public:
-                static void exec() {
-                    paramCount += 1;
-                }
-        };
+        static const int paramCount = Length<paramTypeList>::value;
         
         static MYSQL_BIND * resultBindMem;
-        static int resultCount;
-        
-        template<class __Item>
-        class ResultCountProcedure
-        {
-            public:
-                static void exec() {
-                    resultCount += 1;
-                }
-        };
+        static const int resultCount = __Model::fieldCount;
         
         static void prepare(MYSQL_BIND * bind, const AbstractValue * value, int * length, bool is_input,
                 my_bool * is_null = NULL,
@@ -262,9 +230,6 @@ class Select: public SqlQueryPart
         // removing the first parameter of the variadic function.
 
         static std::vector<__Model *> with(int n, ...) {
-            typedef typename __Where::typeList paramTypeList;
-            typedef typename __Model::typeList resultTypeList;
-            
             va_start(ap, n);
             
             if (!initialized) {
@@ -280,9 +245,6 @@ class Select: public SqlQueryPart
                 delete[] theQueryCstr;
                 
                 // 1. Parameters
-                Exec<paramTypeList, ParamMemSizeProcedure>::exec();
-                Exec<paramTypeList, ParamCountProcedure>::exec();
-                
                 paramMem = new uint8_t[paramMemSize]; // throws an exception if fails, ok for us
                 paramBindMem = new MYSQL_BIND[paramCount]; // throws an exception if fails, ok for us
                 paramDataLength = new int[paramCount]; // throws an exception if fails, ok for us
@@ -297,9 +259,6 @@ class Select: public SqlQueryPart
                 }
 
                 // 2. Result
-                Exec<resultTypeList, ResultMemSizeProcedure>::exec();
-                Exec<resultTypeList, ResultCountProcedure>::exec();
-                
                 resultMem = new uint8_t[resultMemSize]; // throws an exception if fails, ok for us
                 resultBindMem = new MYSQL_BIND[resultCount]; // throws an exception if fails, ok for us
                 resultDataLength = new int[resultCount]; // throws an exception if fails, ok for us
@@ -333,7 +292,7 @@ class Select: public SqlQueryPart
                 currentModel = new __Model;
                 resultOffset = 0;
                 resultIndex = resultCount - 1;
-                Exec<typename __Model::memberList, ResultCopyProcedure>::exec();
+                Exec<typename __Model::fieldList, ResultCopyProcedure>::exec();
                 result.push_back(currentModel);
             }
             if (retcode != MYSQL_NO_DATA) {
@@ -367,25 +326,13 @@ class Select: public SqlQueryPart
 };
 
 template<class __Model, class __Where>
-int Select<__Model, __Where>::paramMemSize = 0;
-
-template<class __Model, class __Where>
 uint8_t * Select<__Model, __Where>::paramMem = NULL;
-
-template<class __Model, class __Where>
-int Select<__Model, __Where>::resultMemSize = 0;
 
 template<class __Model, class __Where>
 uint8_t * Select<__Model, __Where>::resultMem = NULL;
 
 template<class __Model, class __Where>
-int Select<__Model, __Where>::paramCount = 0;
-
-template<class __Model, class __Where>
 MYSQL_BIND * Select<__Model, __Where>::paramBindMem = NULL;
-
-template<class __Model, class __Where>
-int Select<__Model, __Where>::resultCount = 0;
 
 template<class __Model, class __Where>
 MYSQL_BIND * Select<__Model, __Where>::resultBindMem = NULL;
