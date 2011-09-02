@@ -4,7 +4,11 @@
 #include <cstdarg>
 #include <cstring>
 #include <stdint.h>
+#include <map>
+#include <vector>
 #include <boost/scoped_ptr.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/thread/thread.hpp>
 #include <mysql/mysql.h>
 #include "exception.h"
 #include "type.h"
@@ -121,17 +125,42 @@ class Select: public SqlQueryPart
         typedef typename __Where::typeList paramTypeList;
         typedef typename __Model::typeList resultTypeList;
     
-        static uint8_t * paramMem;
         static const int paramMemSize = MemCount<paramTypeList>::value;
-        
-        static uint8_t * resultMem;
         static const int resultMemSize = __Model::totalFieldSize;
-        
-        static MYSQL_BIND * paramBindMem;
         static const int paramCount = Length<paramTypeList>::value;
-        
-        static MYSQL_BIND * resultBindMem;
         static const int resultCount = __Model::fieldCount;
+
+        class Resource
+        {
+            public:
+                bool initialized;
+
+                uint8_t * paramMem;
+                MYSQL_BIND * paramBindMem;
+                int * paramDataLength;
+
+                uint8_t * resultMem;
+                MYSQL_BIND * resultBindMem;
+                int * resultDataLength;
+
+                MYSQL_STMT * statement;
+
+                Resource() {
+                    initialized = false;
+                }
+
+                ~Resource() {
+                    mysql_stmt_close(statement);
+                    delete[] paramMem;
+                    delete[] resultMem;
+                    delete[] paramBindMem;
+                    delete[] resultBindMem;
+                    delete[] paramDataLength;
+                    delete[] resultDataLength;
+                }
+        };
+
+        static boost::thread_specific_ptr<Resource> resource;
         
         static void prepare(MYSQL_BIND * bind, const AbstractValue * value, int * length, bool is_input,
                 my_bool * is_null = NULL,
@@ -151,162 +180,204 @@ class Select: public SqlQueryPart
             bind->error = error;
         }
         
-        static int * paramDataLength;
-        static int paramOffset;
-        static int paramIndex;
-        
+        class ParamPrepareProcedureParam
+        {
+            public:
+                int offset;
+                int index;
+                Resource * resource;
+        };
         template<class __Item>
         class ParamPrepareProcedure
         {
             public:
-                static void exec() {
+                static void exec(void * param_ptr) {
+                    ParamPrepareProcedureParam * param = (ParamPrepareProcedureParam *)param_ptr;
                     boost::scoped_ptr<AbstractValue> value(new __Item);
                     
-                    value->bind(paramMem + paramOffset, value->get_max_length());
-                    paramDataLength[paramIndex] = value->get_data_length();
-                    prepare(paramBindMem + paramIndex, value.get(), paramDataLength + paramIndex, true);
+                    value->bind(param->resource->paramMem + param->offset, value->get_max_length());
+                    param->resource->paramDataLength[param->index] = value->get_data_length();
+                    prepare(param->resource->paramBindMem + param->index,
+                            value.get(),
+                            param->resource->paramDataLength + param->index,
+                            true);
                     
-                    paramOffset += value->get_max_length();
-                    paramIndex += 1;
+                    param->offset += value->get_max_length();
+                    param->index += 1;
                 }
         };
         
-        static int * resultDataLength;
-        static int resultOffset;
-        static int resultIndex;
-        
+        class ResultPrepareProcedureParam
+        {
+            public:
+                int offset;
+                int index;
+                Resource * resource;
+        };
         template<class __Item>
         class ResultPrepareProcedure
         {
             public:
-                static void exec() {
+                static void exec(void * param_ptr) {
+                    ResultPrepareProcedureParam * param = (ResultPrepareProcedureParam *)param_ptr;
                     boost::scoped_ptr<AbstractValue> value(new __Item);
                     
-                    value->bind(resultMem + resultOffset, value->get_max_length());
-                    resultDataLength[resultIndex] = value->get_max_data_length();
-                    prepare(resultBindMem + resultIndex, value.get(), resultDataLength + resultIndex, false);
+                    value->bind(param->resource->resultMem + param->offset, value->get_max_length());
+                    param->resource->resultDataLength[param->index] = value->get_max_data_length();
+                    prepare(param->resource->resultBindMem + param->index,
+                            value.get(),
+                            param->resource->resultDataLength + param->index,
+                            false);
                     
-                    resultOffset += value->get_max_length();
-                    resultIndex -= 1;
+                    param->offset += value->get_max_length();
+                    param->index -= 1;
                 }
         };
         
-        static va_list ap;
-        
+        class ParamCopyProcedureParam
+        {
+            public:
+                int offset;
+                int index;
+                va_list * ap;
+                Resource * resource;
+        };
         template<class __Item>
         class ParamCopyProcedure
         {
             public:
-                static void exec() {
+                static void exec(void * param_ptr) {
+                    ParamCopyProcedureParam * param = (ParamCopyProcedureParam *)param_ptr;
                     typedef typename __Item::ctype ctype;
                     
-                    ctype cvalue = va_arg(ap,  ctype);
+                    ctype cvalue = va_arg(*param->ap,  ctype);
                     boost::scoped_ptr<AbstractValue> value(__Item::from_ctype(cvalue));
                     
-                    value->bind(paramMem + paramOffset, value->get_max_length());
-                    paramDataLength[paramIndex] = value->get_data_length();
-                    prepare(paramBindMem + paramIndex, value.get(), paramDataLength + paramIndex, true);
+                    value->bind(param->resource->paramMem + param->offset, value->get_max_length());
+                    param->resource->paramDataLength[param->index] = value->get_data_length();
+                    prepare(param->resource->paramBindMem + param->index,
+                            value.get(),
+                            param->resource->paramDataLength + param->index,
+                            true);
                     
-                    paramOffset += __Item::max_length;
-                    paramIndex += 1;
+                    param->offset += __Item::max_length;
+                    param->index += 1;
                 }
         };
         
-        static __Model * currentModel;
-        
+        class ResultCopyProcedureParam
+        {
+            public:
+                int offset;
+                int index;
+                __Model * model;
+                Resource * resource;
+        };
         template<class __Item>
         class ResultCopyProcedure
         {
             public:
-                static void exec() {
+                static void exec(void * param_ptr) {
+                    ResultCopyProcedureParam * param = (ResultCopyProcedureParam *)param_ptr;
                     typedef typename __Item::itemType ValueType;
                     
-                    boost::scoped_ptr<AbstractValue> value(ValueType::from_dump(resultMem + resultOffset));
-                    __Item::setCppValue(currentModel, GET_CPP_REPR(ValueType, value));
+                    boost::scoped_ptr<AbstractValue> value(ValueType::from_dump(param->resource->resultMem + param->offset));
+                    __Item::setCppValue(param->model, GET_CPP_REPR(ValueType, value));
                     
-                    resultOffset += ValueType::max_length;
-                    resultIndex -= 1;
+                    param->offset += ValueType::max_length;
+                    param->index -= 1;
                 }
         };
-        
-        static MYSQL_STMT * statement;
     
     public:
 
         // It seems that there is no solution to the problem of
         // removing the first parameter of the variadic function.
 
-        static std::vector<__Model *> with(int n, ...) {
+        static std::vector< boost::shared_ptr<__Model> > with(int n, ...) {
+            va_list ap;
             va_start(ap, n);
-            
-            if (!initialized) {
+
+            if (resource.get() == NULL || !resource->initialized) {
+                resource.reset(new Resource());
+
                 // 0. Preparing statement
-                statement = mysql_stmt_init(Connection::connection());
+                resource->statement = mysql_stmt_init(Connection::connection());
                 
                 std::string theQuery = stringify();
                 char * theQueryCstr = new char[theQuery.length() + 1];
                 std::strncpy(theQueryCstr, theQuery.c_str(), theQuery.length());
-                if (mysql_stmt_prepare(statement, theQueryCstr, theQuery.length()) != 0) {
+                if (mysql_stmt_prepare(resource->statement, theQueryCstr, theQuery.length()) != 0) {
                     delete[] theQueryCstr;
                     throw new CotException(std::string("mysql_stmt_prepare(): ") + \
-                            mysql_stmt_error(statement));
+                            mysql_stmt_error(resource->statement));
                 }
                 delete[] theQueryCstr;
                 
                 // 1. Parameters
-                paramMem = new uint8_t[paramMemSize]; // throws an exception if fails, ok for us
-                paramBindMem = new MYSQL_BIND[paramCount]; // throws an exception if fails, ok for us
-                paramDataLength = new int[paramCount]; // throws an exception if fails, ok for us
+                resource->paramMem = new uint8_t[paramMemSize]; // throws an exception if fails, ok for us
+                resource->paramBindMem = new MYSQL_BIND[paramCount]; // throws an exception if fails, ok for us
+                resource->paramDataLength = new int[paramCount]; // throws an exception if fails, ok for us
                 
-                paramOffset = 0;
-                paramIndex = 0;
-                Exec<paramTypeList, ParamPrepareProcedure>::exec();
+                ParamPrepareProcedureParam ppp_param;
+                ppp_param.offset = 0;
+                ppp_param.index = 0;
+                ppp_param.resource = resource.get();
+                Exec<paramTypeList, ParamPrepareProcedure>::exec(&ppp_param);
                 
-                if (mysql_stmt_bind_param(statement, paramBindMem) != 0) {
+                if (mysql_stmt_bind_param(resource->statement, resource->paramBindMem) != 0) {
                     throw new CotException(std::string("mysql_stmt_bind_param(): ") + \
-                        mysql_stmt_error(statement));
+                        mysql_stmt_error(resource->statement));
                 }
 
                 // 2. Result
-                resultMem = new uint8_t[resultMemSize]; // throws an exception if fails, ok for us
-                resultBindMem = new MYSQL_BIND[resultCount]; // throws an exception if fails, ok for us
-                resultDataLength = new int[resultCount]; // throws an exception if fails, ok for us
+                resource->resultMem = new uint8_t[resultMemSize]; // throws an exception if fails, ok for us
+                resource->resultBindMem = new MYSQL_BIND[resultCount]; // throws an exception if fails, ok for us
+                resource->resultDataLength = new int[resultCount]; // throws an exception if fails, ok for us
                 
-                resultOffset = 0;
-                resultIndex = resultCount - 1;
-                Exec<resultTypeList, ResultPrepareProcedure>::exec();
+                ResultPrepareProcedureParam rpp_param;
+                rpp_param.offset = 0;
+                rpp_param.index = resultCount - 1;
+                rpp_param.resource = resource.get();
+                Exec<resultTypeList, ResultPrepareProcedure>::exec(&rpp_param);
                 
-                if (mysql_stmt_bind_result(statement, resultBindMem) != 0) {
+                if (mysql_stmt_bind_result(resource->statement, resource->resultBindMem) != 0) {
                     throw new CotException(std::string("mysql_stmt_bind_result(): ") + \
-                        mysql_stmt_error(statement));
+                        mysql_stmt_error(resource->statement));
                 }
 
-                initialized = true;
+                resource->initialized = true;
             }
             
             // copy the given variadic parameter list into the param bind memory
-            paramOffset = 0;
-            paramIndex = 0;
-            Exec<paramTypeList, ParamCopyProcedure>::exec();
+            ParamCopyProcedureParam pcp_param;
+            pcp_param.offset = 0;
+            pcp_param.index = 0;
+            pcp_param.ap = &ap;
+            pcp_param.resource = resource.get();
+            Exec<paramTypeList, ParamCopyProcedure>::exec(&pcp_param);
             
             // execute the query
-            if (mysql_stmt_execute(statement) != 0) {
-                throw new CotException(std::string("mysql_stmt_execute(): ") + mysql_stmt_error(statement));
+            if (mysql_stmt_execute(resource->statement) != 0) {
+                throw new CotException(std::string("mysql_stmt_execute(): ") + \
+                        mysql_stmt_error(resource->statement));
             }
             
             // fetching the result
-            std::vector<__Model *> result;
+            std::vector< boost::shared_ptr<__Model> > result;
             int retcode;
-            while ((retcode = mysql_stmt_fetch(statement)) == 0 || retcode == MYSQL_DATA_TRUNCATED) {
-                currentModel = new __Model;
-                resultOffset = 0;
-                resultIndex = resultCount - 1;
-                Exec<typename __Model::fieldList, ResultCopyProcedure>::exec();
-                result.push_back(currentModel);
+            while ((retcode = mysql_stmt_fetch(resource->statement)) == 0 || retcode == MYSQL_DATA_TRUNCATED) {
+                ResultCopyProcedureParam rcp_param;
+                rcp_param.model = new __Model;
+                rcp_param.offset = 0;
+                rcp_param.index = resultCount - 1;
+                rcp_param.resource = resource.get();
+                Exec<typename __Model::fieldList, ResultCopyProcedure>::exec(&rcp_param);
+                result.push_back(boost::shared_ptr<__Model>(rcp_param.model));
             }
             if (retcode != MYSQL_NO_DATA) {
                 throw new CotException(std::string("mysql_stmt_fetch(): ") + \
-                    mysql_stmt_error(statement));
+                    mysql_stmt_error(resource->statement));
             }
 
             va_end(ap);
@@ -319,61 +390,10 @@ class Select: public SqlQueryPart
                 " " + \
                 __Where::stringify();
         }
-        
-        static void destroy() {
-            mysql_stmt_close(statement);
-            delete[] paramMem;
-            delete[] resultMem;
-            delete[] paramBindMem;
-            delete[] resultBindMem;
-            delete[] paramDataLength;
-            delete[] resultDataLength;
-        }
-        
-    private:
-        static bool initialized;
 };
 
 template<class __Model, class __Where>
-uint8_t * Select<__Model, __Where>::paramMem = NULL;
-
-template<class __Model, class __Where>
-uint8_t * Select<__Model, __Where>::resultMem = NULL;
-
-template<class __Model, class __Where>
-MYSQL_BIND * Select<__Model, __Where>::paramBindMem = NULL;
-
-template<class __Model, class __Where>
-MYSQL_BIND * Select<__Model, __Where>::resultBindMem = NULL;
-
-template<class __Model, class __Where>
-int * Select<__Model, __Where>::paramDataLength = NULL;
-
-template<class __Model, class __Where>
-int Select<__Model, __Where>::paramOffset = 0;
-
-template<class __Model, class __Where>
-int Select<__Model, __Where>::paramIndex = 0;
-
-template<class __Model, class __Where>
-int * Select<__Model, __Where>::resultDataLength = NULL;
-
-template<class __Model, class __Where>
-int Select<__Model, __Where>::resultOffset = 0;
-
-template<class __Model, class __Where>
-int Select<__Model, __Where>::resultIndex = 0;
-
-template<class __Model, class __Where>
-bool Select<__Model, __Where>::initialized = false;
-
-template<class __Model, class __Where>
-va_list Select<__Model, __Where>::ap;
-
-template<class __Model, class __Where>
-__Model * Select<__Model, __Where>::currentModel = NULL;
-
-template<class __Model, class __Where>
-MYSQL_STMT * Select<__Model, __Where>::statement = NULL;
+boost::thread_specific_ptr< typename Select<__Model, __Where>::Resource >
+Select<__Model, __Where>::resource;
 
 #endif // COT_SQL_H

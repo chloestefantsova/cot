@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <boost/scoped_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 #include "connection.h"
 #include "sql.h"
 #include "author.h"
@@ -21,7 +22,7 @@ void perform()
     cout << "Just saved an author with id = " << author->id << endl;
     
     // An example of UPDATE query.
-    vector<Author *> authors = Select< Author, All >::with(0);
+    vector< boost::shared_ptr<Author> > authors = Select< Author, All >::with(0);
     for (int i = 0; i < (int)authors.size(); ++i) {
         authors[i]->age += 1;
         authors[i]->save();
@@ -64,8 +65,6 @@ void perform()
         authors[i]->remove();
     }
     cout << "Removed all authors without books." << endl;
-    
-    Connection::disconnect();
 }
 
 int main(int argc, char * argv[])

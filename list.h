@@ -98,6 +98,11 @@ class Exec
             __Procedure<typename __List::head>::exec();
             Exec<typename __List::tail, __Procedure>::exec();
         }
+
+        static void exec(void * param) {
+            __Procedure<typename __List::head>::exec(param);
+            Exec<typename __List::tail, __Procedure>::exec(param);
+        }
 };
 
 template< template<class __Item> class __Procedure >
@@ -105,6 +110,7 @@ class Exec<TypeNil, __Procedure>
 {
     public:
         static void exec() {}
+        static void exec(void * param) {}
 };
 
 #define DECLARE_SUM_PROC(proc_name, field_name) \
