@@ -412,7 +412,7 @@ template<class Subclass>
 boost::thread_specific_ptr< typename Model<Subclass>::Resource > Model<Subclass>::resource;
 
 #define BEGIN_MODEL(name) \
-    class name: public Model<name>, SqlQueryPart \
+    class name: public Model<name> \
     { \
         public: \
             typedef name cls;\
@@ -420,7 +420,7 @@ boost::thread_specific_ptr< typename Model<Subclass>::Resource > Model<Subclass>
             virtual ~name() {}\
             \
             IntValue::cpptype id;\
-            class _id_: public SqlQueryPart \
+            class _id_ \
             { \
                 public: \
                     static std::string stringify() { return "id"; } \
@@ -440,7 +440,7 @@ boost::thread_specific_ptr< typename Model<Subclass>::Resource > Model<Subclass>
 #define FIELD(name, ValueType) \
                 ValueType> name ## List; \
     ValueType::cpptype name; \
-    class _ ## name ## _: public SqlQueryPart \
+    class _ ## name ## _ \
     { \
         public: \
             static std::string stringify() { return # name ; } \
