@@ -1,6 +1,8 @@
 #ifndef COT_LIST_H
 #define COT_LIST_H
 
+namespace cot {
+
 class TypeNil {};
 
 template<class First, class Second>
@@ -129,5 +131,7 @@ class Exec<TypeNil, __Procedure>
         };
         
 DECLARE_SUM_PROC(MemCount, max_length)
+
+} // namespace cot
 
 #endif //COT_LIST_H

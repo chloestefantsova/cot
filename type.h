@@ -10,6 +10,8 @@
 #include <mysql/mysql.h>
 #include "cot/exception.h"
 
+namespace cot {
+
 class AbstractValue
 {
     public:
@@ -94,10 +96,10 @@ class IntValue: public Value<int, int, MYSQL_TYPE_LONG, MYSQL_TYPE_LONG, sizeof(
         
         virtual void bind(void * mem, int bytes_available) {
             if (bound_) {
-                throw new CotException("bind(): IntValue instance already bound");
+                throw new Exception("bind(): IntValue instance already bound");
             }
             if (bytes_available < get_bind_length()) {
-                throw new CotException("bind(): not enough memory passed to bind IntValue instance");
+                throw new Exception("bind(): not enough memory passed to bind IntValue instance");
             }
             bind_address_ = mem;
             data_address_ = mem;
@@ -138,7 +140,7 @@ class StringValue: public Value<
             StringValue<__Length> * result = new StringValue<__Length>;
             result->value_ = std::string(value);
             if ((int)result->value_.length() > StringValue<__Length>::max_length) {
-                throw new CotException("from_ctype(): "
+                throw new Exception("from_ctype(): "
                     "the passed value length is greater than the StringValue max_length parameter");
             }
             return result;
@@ -147,7 +149,7 @@ class StringValue: public Value<
             StringValue<__Length> * result = new StringValue<__Length>;
             result->value_ = value;
             if ((int)result->value_.length() > StringValue<__Length>::max_length) {
-                throw new CotException("from_cpptype(): "
+                throw new Exception("from_cpptype(): "
                     "the passed value length is greater than the StringValue max_length parameter");
             }
             return result;
@@ -158,7 +160,7 @@ class StringValue: public Value<
             result->data_address_ = (uint8_t *)mem + sizeof(char *);
             result->value_ = std::string((char *)result->data_address_);
             if ((int)result->value_.length() > StringValue<__Length>::max_length) {
-                throw new CotException("from_dump(): "
+                throw new Exception("from_dump(): "
                     "the passed value length is greater than the StringValue max_length parameter");
             }
             result->bound_ = true;
@@ -174,10 +176,10 @@ class StringValue: public Value<
         
         virtual void bind(void * mem, int bytes_available) {
             if (this->bound_) {
-                throw new CotException("bind(): the StringValue instance is already bound");
+                throw new Exception("bind(): the StringValue instance is already bound");
             }
             if (bytes_available < get_bind_length()) {
-                throw new CotException("bind(): not enough memory passed to bind the StringValue instance");
+                throw new Exception("bind(): not enough memory passed to bind the StringValue instance");
             }
             this->bind_address_ = mem;
             this->data_address_ = (uint8_t *)mem + sizeof(char *);
@@ -201,6 +203,8 @@ class StringValue: public Value<
     protected:
         std::string value_;
 };
+
+} // namespace cot
 
 #endif // COT_TYPE_H
 

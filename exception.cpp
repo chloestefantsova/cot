@@ -1,20 +1,24 @@
 #include "cot/exception.h"
 
-CotException::CotException():
-    std::runtime_error("CotException")
+namespace cot {
+
+Exception::Exception():
+    std::runtime_error("Exception")
 {
 }
 
-CotException::CotException(const std::string & msg):
-    std::runtime_error(std::string("CotException: ") + msg)
+Exception::Exception(const std::string & msg):
+    std::runtime_error(std::string("Exception: ") + msg)
 {
 }
 
-CotException::CotException(const CotException & ex):
+Exception::Exception(const Exception & ex):
     std::runtime_error(ex)
 {
 }
 
-CotException::~CotException() throw()
+Exception::~Exception() throw()
 {
 }
+
+} // namespace cot

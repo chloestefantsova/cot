@@ -5,9 +5,9 @@
 #include "cot/model.h"
 
 BEGIN_MODEL(Author)
-    FIELD(name, StringValue<256>)
-    FIELD(age, IntValue)
-    FIELD(bookCount, IntValue)
+    FIELD(name, cot::StringValue<256>)
+    FIELD(age, cot::IntValue)
+    FIELD(bookCount, cot::IntValue)
 END_MODEL
 
 #endif

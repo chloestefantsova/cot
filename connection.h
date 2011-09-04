@@ -7,6 +7,8 @@
 #include <boost/thread/tss.hpp>
 #include <mysql/mysql.h>
 
+namespace cot {
+
 // Connection class is a singleton.  There would be the connections
 // pool in the upcomming release.
 
@@ -35,5 +37,7 @@ class Connection
 
         static MYSQL * connection();
 };
+
+} // namespace cot
 
 #endif

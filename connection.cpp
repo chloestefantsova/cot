@@ -4,6 +4,8 @@
 #include "cot/connection.h"
 #include "cot/exception.h"
 
+namespace cot {
+
 boost::thread_specific_ptr<Connection::Resource> Connection::resource;
 
 void Connection::connect(
@@ -17,7 +19,7 @@ void Connection::connect(
     }
 
     if (!mysql_init(&resource->connect))
-        throw CotException(
+        throw Exception(
             std::string("mysql_init(): ") +
             mysql_error(&resource->connect)
         );
@@ -28,7 +30,7 @@ void Connection::connect(
             0,
             NULL,
             0))
-        throw CotException(
+        throw Exception(
             std::string("mysql_real_connect()") +
             mysql_error(&resource->connect)
         );
@@ -38,3 +40,5 @@ MYSQL * Connection::connection()
 {
     return &resource->connect;
 }
+
+} // namespace cot

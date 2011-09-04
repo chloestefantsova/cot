@@ -10,6 +10,8 @@
 #include "cot/list.h"
 #include "cot/type.h"
 
+namespace cot {
+
 template<class Subclass>
 class Model
 {
@@ -48,7 +50,7 @@ class Model
                             insertQueryCStr,
                             insertQueryStr.length()) != 0) {
                     delete[] insertQueryCStr;
-                    throw new CotException(std::string("mysql_stmt_prepare(): ") + \
+                    throw new Exception(std::string("mysql_stmt_prepare(): ") + \
                             mysql_stmt_error(resource->insertStatement));
                 }
                 delete[] insertQueryCStr;
@@ -64,7 +66,7 @@ class Model
                 ibpp_param.resource = resource.get();
                 Exec<typename Subclass::typeList, InsertBindsPrepareProcedure>::exec(&ibpp_param);
                 if (mysql_stmt_bind_param(resource->insertStatement, resource->insertBindMem + 1) != 0) { // except the id
-                    throw new CotException(std::string("mysql_stmt_bind_param(): ") + \
+                    throw new Exception(std::string("mysql_stmt_bind_param(): ") + \
                             mysql_stmt_error(resource->insertStatement));
                 }
                 
@@ -89,7 +91,7 @@ class Model
                             updateQueryCStr,
                             updateQueryStr.length()) != 0) {
                     delete[] updateQueryCStr;
-                    throw new CotException(std::string("mysql_stmt_prepare(): ") + \
+                    throw new Exception(std::string("mysql_stmt_prepare(): ") + \
                             mysql_stmt_error(resource->updateStatement));
                 }
                 delete[] updateQueryCStr;
@@ -108,7 +110,7 @@ class Model
                         resource->updateBindMem,
                         sizeof(MYSQL_BIND));
                 if (mysql_stmt_bind_param(resource->updateStatement, resource->updateBindMem + 1) != 0) { // moved id
-                    throw new CotException(std::string("mysql_stmt_bind_param(): ") + \
+                    throw new Exception(std::string("mysql_stmt_bind_param(): ") + \
                             mysql_stmt_error(resource->updateStatement));
                 }
                 
@@ -125,7 +127,7 @@ class Model
                 Exec<typename Subclass::fieldList, InsertParamCopyProcedure>::exec(&ipcp_param);
                 
                 if (mysql_stmt_execute(resource->insertStatement) != 0) {
-                    throw new CotException(std::string("mysql_stmt_execute(): ") + \
+                    throw new Exception(std::string("mysql_stmt_execute(): ") + \
                             mysql_stmt_error(resource->insertStatement));
                 }
                 
@@ -143,7 +145,7 @@ class Model
                 std::memcpy(resource->updateBindMem + fieldCount, resource->updateBindMem, sizeof(MYSQL_BIND));
                 
                 if (mysql_stmt_execute(resource->updateStatement) != 0) {
-                    throw new CotException(std::string("mysql_stmt_execute(): ") + \
+                    throw new Exception(std::string("mysql_stmt_execute(): ") + \
                             mysql_stmt_error(resource->updateStatement));
                 }
             }
@@ -168,7 +170,7 @@ class Model
                                 deleteQueryCStr,
                                 deleteQueryStr.length()) != 0) {
                         delete[] deleteQueryCStr;
-                        throw new CotException(std::string("mysql_stmt_prepare(): ") + \
+                        throw new Exception(std::string("mysql_stmt_prepare(): ") + \
                                 mysql_stmt_error(resource->deleteStatement));
                     }
                     delete[] deleteQueryCStr;
@@ -182,7 +184,7 @@ class Model
                     resource->deleteDataLength[0] = value->get_data_length();
                     prepare(resource->deleteBindMem, value.get(), resource->deleteDataLength, true);
                     if (mysql_stmt_bind_param(resource->deleteStatement, resource->deleteBindMem) != 0) {
-                        throw new CotException(std::string("mysql_stmt_bind_param(): ") + \
+                        throw new Exception(std::string("mysql_stmt_bind_param(): ") + \
                                 mysql_stmt_error(resource->deleteStatement));
                     }
                     
@@ -197,7 +199,7 @@ class Model
                 prepare(resource->deleteBindMem, value.get(), resource->deleteDataLength, true);
                 
                 if (mysql_stmt_execute(resource->deleteStatement) != 0) {
-                    throw new CotException(std::string("mysql_stmt_execute(): ") + \
+                    throw new Exception(std::string("mysql_stmt_execute(): ") + \
                             mysql_stmt_error(resource->deleteStatement));
                 }
                 
@@ -411,20 +413,22 @@ class Model
 template<class Subclass>
 boost::thread_specific_ptr< typename Model<Subclass>::Resource > Model<Subclass>::resource;
 
+} // namespace cot
+
 #define BEGIN_MODEL(name) \
-    class name: public Model<name> \
+    class name: public cot::Model<name> \
     { \
         public: \
             typedef name cls;\
             static std::string stringify() { return # name ; }\
             virtual ~name() {}\
             \
-            IntValue::cpptype id;\
+            cot::IntValue::cpptype id;\
             class _id_ \
             { \
                 public: \
                     static std::string stringify() { return "id"; } \
-                    typedef IntValue itemType; \
+                    typedef cot::IntValue itemType; \
                     static typename itemType::cpptype getCppValue(cls * instance) { \
                         return instance->id; \
                     } \
@@ -435,7 +439,7 @@ boost::thread_specific_ptr< typename Model<Subclass>::Resource > Model<Subclass>
                         instance->id = value; \
                     } \
             }; \
-            typedef TypePair< TypePair< TypePair<_id_, IntValue>, TypeNil>,
+            typedef cot::TypePair< cot::TypePair< cot::TypePair<_id_, cot::IntValue>, cot::TypeNil>,
 
 #define FIELD(name, ValueType) \
                 ValueType> name ## List; \
@@ -455,14 +459,14 @@ boost::thread_specific_ptr< typename Model<Subclass>::Resource > Model<Subclass>
                 instance->name = value;\
             }\
     };\
-    typedef TypePair< TypePair< TypePair<_ ## name ## _, name ## List::tail>, name ## List::head>,
+    typedef cot::TypePair< cot::TypePair< cot::TypePair<_ ## name ## _, name ## List::tail>, name ## List::head>,
 
 #define END_MODEL \
-        TypeNil> wrongTypeList;\
+        cot::TypeNil> wrongTypeList;\
         \
         typedef wrongTypeList::head typeZippedList;\
-        typedef typename UnzipFirst<typeZippedList>::typeList fieldList;\
-        typedef typename UnzipSecond<typeZippedList>::typeList typeList;\
+        typedef typename cot::UnzipFirst<typeZippedList>::typeList fieldList;\
+        typedef typename cot::UnzipSecond<typeZippedList>::typeList typeList;\
     };
 
 #endif //COT_MODEL_H

@@ -14,6 +14,8 @@
 #include "cot/type.h"
 #include "cot/list.h"
 
+namespace cot {
+
 class Parameter
 {
     public:
@@ -309,7 +311,7 @@ class Select: public SqlQueryPart
                 std::strncpy(theQueryCstr, theQuery.c_str(), theQuery.length());
                 if (mysql_stmt_prepare(resource->statement, theQueryCstr, theQuery.length()) != 0) {
                     delete[] theQueryCstr;
-                    throw new CotException(std::string("mysql_stmt_prepare(): ") + \
+                    throw new Exception(std::string("mysql_stmt_prepare(): ") + \
                             mysql_stmt_error(resource->statement));
                 }
                 delete[] theQueryCstr;
@@ -326,7 +328,7 @@ class Select: public SqlQueryPart
                 Exec<paramTypeList, ParamPrepareProcedure>::exec(&ppp_param);
                 
                 if (mysql_stmt_bind_param(resource->statement, resource->paramBindMem) != 0) {
-                    throw new CotException(std::string("mysql_stmt_bind_param(): ") + \
+                    throw new Exception(std::string("mysql_stmt_bind_param(): ") + \
                         mysql_stmt_error(resource->statement));
                 }
 
@@ -342,7 +344,7 @@ class Select: public SqlQueryPart
                 Exec<resultTypeList, ResultPrepareProcedure>::exec(&rpp_param);
                 
                 if (mysql_stmt_bind_result(resource->statement, resource->resultBindMem) != 0) {
-                    throw new CotException(std::string("mysql_stmt_bind_result(): ") + \
+                    throw new Exception(std::string("mysql_stmt_bind_result(): ") + \
                         mysql_stmt_error(resource->statement));
                 }
 
@@ -359,7 +361,7 @@ class Select: public SqlQueryPart
             
             // execute the query
             if (mysql_stmt_execute(resource->statement) != 0) {
-                throw new CotException(std::string("mysql_stmt_execute(): ") + \
+                throw new Exception(std::string("mysql_stmt_execute(): ") + \
                         mysql_stmt_error(resource->statement));
             }
             
@@ -376,7 +378,7 @@ class Select: public SqlQueryPart
                 result.push_back(boost::shared_ptr<__Model>(rcp_param.model));
             }
             if (retcode != MYSQL_NO_DATA) {
-                throw new CotException(std::string("mysql_stmt_fetch(): ") + \
+                throw new Exception(std::string("mysql_stmt_fetch(): ") + \
                     mysql_stmt_error(resource->statement));
             }
 
@@ -395,5 +397,7 @@ class Select: public SqlQueryPart
 template<class __Model, class __Where>
 boost::thread_specific_ptr< typename Select<__Model, __Where>::Resource >
 Select<__Model, __Where>::resource;
+
+} // namespace cot
 
 #endif // COT_SQL_H

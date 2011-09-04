@@ -7,6 +7,7 @@
 #include "cot/author.h"
 
 using namespace std;
+using namespace cot;
 
 void perform()
 {

@@ -4,13 +4,17 @@
 #include <stdexcept>
 #include <string>
 
-class CotException: public std::runtime_error
+namespace cot {
+
+class Exception: public std::runtime_error
 {
     public:
-        CotException();
-        CotException(const std::string &);
-        CotException(const CotException &);
-        virtual ~CotException() throw();
+        Exception();
+        Exception(const std::string &);
+        Exception(const Exception &);
+        virtual ~Exception() throw();
 };
+
+} // namespace cot
 
 #endif
