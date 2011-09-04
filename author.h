@@ -2,7 +2,7 @@
 #define __author_h
 
 #include <cstdarg>
-#include "model.h"
+#include "cot/model.h"
 
 BEGIN_MODEL(Author)
     FIELD(name, StringValue<256>)

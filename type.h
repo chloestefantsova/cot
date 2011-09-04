@@ -8,7 +8,7 @@
 #include <string>
 #include <stdint.h>
 #include <mysql/mysql.h>
-#include "exception.h"
+#include "cot/exception.h"
 
 class AbstractValue
 {

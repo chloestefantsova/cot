@@ -2,9 +2,9 @@
 #include <vector>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
-#include "connection.h"
-#include "sql.h"
-#include "author.h"
+#include "cot/connection.h"
+#include "cot/sql.h"
+#include "cot/author.h"
 
 using namespace std;
 

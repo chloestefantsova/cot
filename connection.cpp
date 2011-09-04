@@ -1,8 +1,8 @@
 #include <vector>
 #include <string>
 #include <boost/thread/tss.hpp>
-#include "connection.h"
-#include "exception.h"
+#include "cot/connection.h"
+#include "cot/exception.h"
 
 boost::thread_specific_ptr<Connection::Resource> Connection::resource;
 

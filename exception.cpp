@@ -1,4 +1,4 @@
-#include "exception.h"
+#include "cot/exception.h"
 
 CotException::CotException():
     std::runtime_error("CotException")

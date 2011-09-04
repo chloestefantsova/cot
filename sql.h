@@ -10,9 +10,9 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/thread.hpp>
 #include <mysql/mysql.h>
-#include "exception.h"
-#include "type.h"
-#include "list.h"
+#include "cot/exception.h"
+#include "cot/type.h"
+#include "cot/list.h"
 
 class Parameter
 {

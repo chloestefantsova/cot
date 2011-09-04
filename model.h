@@ -4,9 +4,11 @@
 #include <string>
 #include <vector>
 #include <mysql/mysql.h>
+#include <boost/scoped_ptr.hpp>
 #include <boost/thread/tss.hpp>
-#include "list.h"
-#include "type.h"
+#include "cot/connection.h"
+#include "cot/list.h"
+#include "cot/type.h"
 
 template<class Subclass>
 class Model
