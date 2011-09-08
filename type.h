@@ -15,7 +15,7 @@ namespace cot {
 class AbstractValue
 {
     public:
-        ~AbstractValue() {}
+        virtual ~AbstractValue() {}
         
         virtual int get_mysql_in_type_code() const = 0;
         virtual int get_mysql_out_type_code() const = 0;
@@ -172,7 +172,7 @@ class StringValue: public Value<
             this->bound_ = false;
         }
         
-        ~StringValue() {}
+        virtual ~StringValue() {}
         
         virtual void bind(void * mem, int bytes_available) {
             if (this->bound_) {

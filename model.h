@@ -420,14 +420,14 @@ boost::thread_specific_ptr< typename Model<Subclass>::Resource > Model<Subclass>
     { \
         public: \
             typedef name cls;\
-            static std::string stringify() { return # name ; }\
+            static std::string stringify() { return "`" # name "`" ; }\
             virtual ~name() {}\
             \
             cot::IntValue::cpptype id;\
             class _id_ \
             { \
                 public: \
-                    static std::string stringify() { return "id"; } \
+                    static std::string stringify() { return "`id`"; } \
                     typedef cot::IntValue itemType; \
                     static typename itemType::cpptype getCppValue(cls * instance) { \
                         return instance->id; \
@@ -447,7 +447,7 @@ boost::thread_specific_ptr< typename Model<Subclass>::Resource > Model<Subclass>
     class _ ## name ## _ \
     { \
         public: \
-            static std::string stringify() { return # name ; } \
+            static std::string stringify() { return "`" # name "`" ; } \
             typedef ValueType itemType; \
             static typename itemType::cpptype getCppValue(cls * instance) { \
                 return instance->name; \
