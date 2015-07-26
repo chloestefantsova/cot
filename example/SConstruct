@@ -1,5 +1,0 @@
-# vim: ft=python
-
-env = Environment(CXXFLAGS = "-ggdb -g3 -O0 -std=c++98 -pedantic -Wall -Werror", LIBS = "mysqlclient")
-env.Program(source = ["main.cpp", "author.cpp"],
-            target = "main")
