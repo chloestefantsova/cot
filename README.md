@@ -33,4 +33,6 @@ for (int i = 0; i < (int)authors.size(); ++i) {
 }
 ```
 
+The project is currently in clean-up mode.
+
 Please, email d.a.stephantsov@gmail.com if you have any questions or suggestions.
