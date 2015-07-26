@@ -5,3 +5,4 @@ tests/cot.test
 .sconsign.dblite
 acme.commands
 main
+tags
